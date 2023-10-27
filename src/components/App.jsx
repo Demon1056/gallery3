@@ -15,43 +15,18 @@ export class App extends Component {
     totalPages: 0,
     isLoading: false,
   };
-
-  componentDidUpdate = async (___, prevState) => {
-    if (
-      prevState.findValue === this.state.findValue &&
-      prevState.currentPage === this.state.currentPage
-    ) {
-      return;
-    }
-    if (prevState.findValue !== this.state.findValue) {
-      this.resetDataAndCurrentPage();
-    }
-    try {
-      this.toggleIsLoading();
-      const res = await findImages({
-        q: this.state.findValue,
-        page: this.state.currentPage,
-      });
-      if (res.totalHits === 0) {
-        return Notify.failure(
-          `Sorry, but we didn't find any images. Try to enter another value!!!`
-        );
-      }
-      if (this.state.currentPage === 1) {
-        this.setState({ totalPages: Math.round(res.totalHits / 12) });
-        Notify.info(`Congratulations, we found ${res.totalHits} images`);
-      }
-      if (this.state.currentPage === this.state.totalPages) {
-        Notify.warning(`it is the last page`);
-      }
-      this.setState(state => ({ images: [...state.images, ...res.hits] }));
-    } catch (err) {
-      console.log(err);
-    } finally {
-      this.toggleIsLoading();
-    }
+  makeStatesData = response =>
+    response.map(item => {
+      return {
+        id: item.id,
+        webformatURL: item.webformatURL,
+        tags: item.tags,
+        largeImageURL: item.largeImageURL,
+      };
+    });
+  resetDataAndCurrentPage = () => { 
+    this.setState({images: [], currentPage: 1,  });
   };
-
   handlerSubmit = query => {
     if (!query) {
       return Notify.failure(`Sorry, but you didn't enter value!!!`);
@@ -65,9 +40,46 @@ export class App extends Component {
   handlerClick = () => {
     this.setState(state => ({ currentPage: state.currentPage + 1 }));
   };
-  resetDataAndCurrentPage = () => {
-    this.setState({ currentPage: 1, images: [] });
+  componentDidUpdate = async (___, prevState) => {
+    const {state,  toggleIsLoading}=this
+    const {findValue, currentPage, totalPages}=state
+    if (
+      prevState.findValue === findValue &&
+      prevState.currentPage === currentPage
+    ) {
+      return;
+    }
+    if (prevState.findValue !== findValue) {
+      this.resetDataAndCurrentPage();
+    }
+    try {
+      toggleIsLoading();
+      const res = await findImages({
+        q: findValue,
+        page: currentPage,
+      });
+      if (res.totalHits === 0) {
+        return Notify.failure(
+          `Sorry, but we didn't find any images. Try to enter another value!!!`
+        );
+      }
+      if (currentPage === 1) {
+        this.setState({ totalPages: Math.round(res.totalHits / 12) });
+        Notify.info(`Congratulations, we found ${res.totalHits} images`);
+      }
+      if (currentPage === totalPages) {
+        Notify.warning(`it is the last page`);
+      }
+      this.setState(prevState => ({ images: [...prevState.images, ...res.hits] }));
+    } catch (err) {
+      console.log(err);
+    } finally {
+      toggleIsLoading();
+    }
   };
+
+ 
+ 
   render() {
     return (
       <Box>

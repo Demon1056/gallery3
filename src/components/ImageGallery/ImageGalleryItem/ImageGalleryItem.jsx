@@ -9,6 +9,9 @@ export class ImageGalleryItem extends Component {
   state = {
     isModalOpen: false,
   };
+  toggleModal = ()=>{
+    this.setState((state)=>({isModalOpen:!state.isModalOpen }))
+  }
 
 
   render() {
@@ -16,15 +19,13 @@ export class ImageGalleryItem extends Component {
     return (
       <>
         <ImageItem
-          onClick={() => {
-            this.setState({ isModalOpen: true });
-          }}
+          onClick={this.toggleModal}
         >
           <Image src={oneData.webformatURL} alt={oneData.tags} />
         </ImageItem>
         {this.state.isModalOpen &&
           createPortal(
-            <Modal src={oneData.largeImageURL} alt={oneData.tags} />,
+            <Modal src={oneData.largeImageURL} alt={oneData.tags} closeModal={this.toggleModal}/>,
             modalPortal
           )}
       </>
