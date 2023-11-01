@@ -1,5 +1,7 @@
 import { Component } from 'react';
+
 import { FaMagnifyingGlass } from 'react-icons/fa6';
+
 import {
   SearchInputContainer,
   SearchForm,
@@ -23,9 +25,11 @@ export class Searchbar extends Component {
     this.setState({ value: '' });
   };
   render() {
+    const { handlerSubmit, updateValue, state } = this;
+
     return (
       <SearchInputContainer>
-        <SearchForm onSubmit={this.handlerSubmit}>
+        <SearchForm onSubmit={handlerSubmit}>
           <SearchFormButton type="submit">
             <ButtonLabel>Search</ButtonLabel>
             <FaMagnifyingGlass />
@@ -35,8 +39,8 @@ export class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            value={this.state.value}
-            onChange={this.updateValue}
+            value={state.value}
+            onChange={updateValue}
           />
         </SearchForm>
       </SearchInputContainer>

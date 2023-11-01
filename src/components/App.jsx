@@ -15,62 +15,68 @@ export class App extends Component {
     totalPages: 0,
     isLoading: false,
   };
-  makeStatesData = response =>
-    response.map(item => {
+  makeStatesData = res =>
+    res.map(({ id, webformatURL, tags, largeImageURL }) => {
       return {
-        id: item.id,
-        webformatURL: item.webformatURL,
-        tags: item.tags,
-        largeImageURL: item.largeImageURL,
+        id,
+        webformatURL,
+        tags,
+        largeImageURL,
       };
     });
-  resetDataAndCurrentPage = () => { 
-    this.setState({images: [], currentPage: 1,  });
-  };
+
   handlerSubmit = query => {
     if (!query) {
+      this.setState({ images: [], currentPage: 1 });
       return Notify.failure(`Sorry, but you didn't enter value!!!`);
     }
-    this.setState({ findValue: query });
+    if (query !== this.state.findValue) {
+      this.setState({ findValue: query, images: [], currentPage: 1 });
+    }
   };
 
   toggleIsLoading = () => {
     this.setState(state => ({ isLoading: !state.isLoading }));
   };
+
   handlerClick = () => {
     this.setState(state => ({ currentPage: state.currentPage + 1 }));
   };
+
   componentDidUpdate = async (___, prevState) => {
-    const {state,  toggleIsLoading}=this
-    const {findValue, currentPage, totalPages}=state
+    const { state, toggleIsLoading, makeStatesData } = this;
+    const { findValue, currentPage, totalPages } = state;
+
     if (
       prevState.findValue === findValue &&
       prevState.currentPage === currentPage
     ) {
       return;
     }
-    if (prevState.findValue !== findValue) {
-      this.resetDataAndCurrentPage();
-    }
+
     try {
       toggleIsLoading();
-      const res = await findImages({
+      const { hits, totalHits } = await findImages({
         q: findValue,
         page: currentPage,
       });
-      if (res.totalHits === 0) {
+
+      if (totalHits === 0) {
         return Notify.failure(
           `Sorry, but we didn't find any images. Try to enter another value!!!`
         );
       }
       if (currentPage === 1) {
-        this.setState({ totalPages: Math.round(res.totalHits / 12) });
-        Notify.info(`Congratulations, we found ${res.totalHits} images`);
+        this.setState({ totalPages: Math.round(totalHits / 12) });
+        Notify.info(`Congratulations, we found ${totalHits} images`);
       }
       if (currentPage === totalPages) {
         Notify.warning(`it is the last page`);
       }
-      this.setState(prevState => ({ images: [...prevState.images, ...res.hits] }));
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...makeStatesData(hits)],
+      }));
     } catch (err) {
       console.log(err);
     } finally {
@@ -78,21 +84,19 @@ export class App extends Component {
     }
   };
 
- 
- 
   render() {
+    const { handlerSubmit, handlerClick } = this;
+    const { images, isLoading, currentPage, totalPages } = this.state;
+    const imagesNumbers = images.length
+
     return (
       <Box>
-        <Searchbar submitForm={this.handlerSubmit} />
-        {this.state.images.length > 0 && (
-          <ImageGallery data={this.state.images} />
+        <Searchbar submitForm={handlerSubmit} />
+        {imagesNumbers> 0 && <ImageGallery data={images} />}
+        {isLoading && Loader}
+        {imagesNumbers> 0 && !isLoading && currentPage !== totalPages && (
+          <ButtonLoadMore handlerClick={handlerClick} />
         )}
-        {this.state.isLoading && Loader}
-        {this.state.images.length > 0 &&
-          !this.state.isLoading &&
-          this.state.currentPage !== this.state.totalPages && (
-            <ButtonLoadMore handlerClick={this.handlerClick} />
-          )}
       </Box>
     );
   }

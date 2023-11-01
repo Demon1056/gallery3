@@ -1,31 +1,29 @@
 import { Component } from 'react';
 import { createPortal } from 'react-dom';
+import { Modal, modalPortal } from 'components/Modal/Modal';
 import { Image, ImageItem } from './ImageGalleryItem.styled';
-
-import { Modal } from 'components/Modal/Modal';
-const modalPortal = document.querySelector('#modal-root');
 
 export class ImageGalleryItem extends Component {
   state = {
     isModalOpen: false,
   };
-  toggleModal = ()=>{
-    this.setState((state)=>({isModalOpen:!state.isModalOpen }))
-  }
-
+  toggleModal = () => {
+    this.setState(state => ({ isModalOpen: !state.isModalOpen }));
+  };
 
   render() {
-    const { oneData } = this.props;
+    const { toggleModal } = this;
+    const { webformatURL, tags, largeImageURL } = this.props.oneData;
+    const { isModalOpen } = this.state;
+
     return (
       <>
-        <ImageItem
-          onClick={this.toggleModal}
-        >
-          <Image src={oneData.webformatURL} alt={oneData.tags} />
+        <ImageItem onClick={toggleModal}>
+          <Image src={webformatURL} alt={tags} />
         </ImageItem>
-        {this.state.isModalOpen &&
+        {isModalOpen &&
           createPortal(
-            <Modal src={oneData.largeImageURL} alt={oneData.tags} closeModal={this.toggleModal}/>,
+            <Modal src={largeImageURL} alt={tags} closeModal={toggleModal} />,
             modalPortal
           )}
       </>
