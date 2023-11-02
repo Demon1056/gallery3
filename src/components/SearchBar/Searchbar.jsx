@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
 import { FaMagnifyingGlass } from 'react-icons/fa6';
 
@@ -10,22 +10,19 @@ import {
   Input,
 } from './Searchbar.styled';
 
-export class Searchbar extends Component {
-  state = {
-    value: '',
-  };
-  updateValue = e => {
+export const  Searchbar =({submitForm})=> {
+  const [value, setValue]=useState('')
+  
+  const updateValue = e => {
     const { value } = e.target;
-    this.setState({ value });
+    setValue(value);
   };
 
-  handlerSubmit = e => {
+ const  handlerSubmit = e => {
     e.preventDefault();
-    this.props.submitForm(this.state.value);
-    this.setState({ value: '' });
+    submitForm(value);
+    setValue('')
   };
-  render() {
-    const { handlerSubmit, updateValue, state } = this;
 
     return (
       <SearchInputContainer>
@@ -39,11 +36,11 @@ export class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            value={state.value}
+            value={value}
             onChange={updateValue}
           />
         </SearchForm>
       </SearchInputContainer>
     );
   }
-}
+
